@@ -14,18 +14,18 @@ function getScriptSecret(key) {
 var API_KEY = getScriptSecret("PAGESPEED_API_KEY");
 var SPREAD_SHEET_ID = getScriptSecret("PAGESPEED_SPREAD_SHEET_ID");
 var WEBSITE_URL = getScriptSecret("PAGESPEED_WEBSITE_URL");
-// var SHEET_NAME = getScriptSecret("PAGESPEED_SHEET_NAME");
+var SHEET_NAME = getScriptSecret("PAGESPEED_SHEET_NAME");
 
 // ==============================
 // CONFIGURATION (EDIT HERE)
 // ==============================
 const CONFIG = {
   // Websites to monitor
-  urls: [WEBSITE_URL],
+  urls: [WEBSITE_URL, "http://tabbsa.com"],
 
   // Google Sheets configuration
   spreadsheetId: SPREAD_SHEET_ID,
-  sheetName: "PageSpeed Data SFWN5", // MUST USE PROPERTY ON PRODUCTION
+  sheetName: SHEET_NAME || "TEST", // MUST USE PROPERTY ON PRODUCTION
 
   // PageSpeed Insights API Key
   apiKey: API_KEY,
@@ -38,6 +38,7 @@ const CONFIG = {
   scheduleTimes: [
     { hour: 8, minute: 30 }, // 8:30 AM
     { hour: 12, minute: 0 }, // 12:00 PM
+    { hour: 15, minute: 15 }, // 12:00 PM
     { hour: 16, minute: 30 }, // 4:30 PM
   ],
 };
@@ -52,14 +53,21 @@ function extractPageSpeedData() {
     const sheet = getOrCreateSheet();
 
     CONFIG.urls.forEach((url) => {
+      const websiteDomain = url.split("/").pop();
+      // const websiteDomain = new URL(url).hostname
+      console.log("url information", {
+        url,
+        websiteDomain,
+      });
+      const sheetName = getOrCreateSheet(websiteDomain);
       console.log(`🌐 Processing URL: ${url}`);
 
       // Mobile + Desktop Tests
       const mobileData = getPageSpeedData(url, "mobile");
       const desktopData = getPageSpeedData(url, "desktop");
 
-      if (mobileData) addDataToSheet(sheet, url, "mobile", mobileData);
-      if (desktopData) addDataToSheet(sheet, url, "desktop", desktopData);
+      if (mobileData) addDataToSheet(sheetName, url, "mobile", mobileData);
+      if (desktopData) addDataToSheet(sheetName, url, "desktop", desktopData);
 
       Utilities.sleep(1000);
     });
@@ -91,145 +99,120 @@ const runTest = () => {
 // EXTRACT TOP INSIGHT (Opportunities)
 // ==============================
 function extractTopInsight(audits) {
+  // const opportunityAudits = [
+  //   "render-blocking-resources",
+  //   "unused-css-rules",
+  //   "unused-javascript",
+  //   "modern-image-formats",
+  //   "offscreen-images",
+  //   "unminified-css",
+  //   "unminified-javascript",
+  //   "efficient-animated-content",
+  //   "duplicated-javascript",
+  //   "legacy-javascript",
+  //   "uses-optimized-images",
+  //   "uses-text-compression",
+  //   "uses-responsive-images"
+  // ];
+
   const opportunityAudits = [
-    "render-blocking-resources",
-    "unused-css-rules",
-    "unused-javascript",
-    "modern-image-formats",
-    "offscreen-images",
-    "unminified-css",
-    "unminified-javascript",
-    "efficient-animated-content",
-    "duplicated-javascript",
-    "legacy-javascript",
-    "uses-optimized-images",
-    "uses-text-compression",
-    "uses-responsive-images",
+    "uses-long-cache-ttl", // Cache policy
+    "legacy-javascript", // Legacy JS
+    "render-blocking-resources", // Render blocking
+    "unused-css-rules", // Unused CSS
+    "unused-javascript", // Unused JS
+    "modern-image-formats", // Image formats
+    "offscreen-images", // Offscreen images
+    "unminified-css", // Minified CSS
+    "unminified-javascript", // Minified JS
+    "efficient-animated-content", // Animated content
+    "duplicated-javascript", // Duplicated JS
+    "uses-optimized-images", // Optimized images
+    "uses-text-compression", // Text compression
+    "uses-responsive-images", // Responsive images
+    "uses-rel-preconnect", // Preconnect
   ];
 
-  // let topInsight = { title: "Optimized", savings: 0 };
-
-  // opportunityAudits.forEach(auditKey => {
-  //   const audit = audits[auditKey];
-  //   if (audit && audit.details && audit.details.overallSavingsMs) {
-  //     const savings = audit.details.overallSavingsMs;
-  //     if (savings > topInsight.savings) {
-  //       topInsight = {
-  //         title: audit.title,
-  //         savings: savings
-  //       };
-  //     }
-  //   }
-  // });
-
-  // if (topInsight.savings > 0) {
-  //   return `${topInsight.title} Est savings of ${(topInsight.savings / 1000).toFixed(2)} s`;
-  // }
   return returnFormatedData(audits, opportunityAudits);
-
-  return "Optimized";
 }
 
 // ==============================
 // EXTRACT TOP DIAGNOSTIC
 // ==============================
 function extractTopDiagnostic(audits) {
+  // const diagnosticAudits = [
+  //   "mainthread-work-breakdown",
+  //   "bootup-time",
+  //   "uses-rel-preconnect",
+  //   "font-display",
+  //   "third-party-summary",
+  //   "third-party-facades",
+  //   "largest-contentful-paint-element",
+  //   "lcp-lazy-loaded",
+  //   "layout-shift-elements",
+  //   "uses-passive-event-listeners",
+  //   "no-document-write",
+  //   "long-tasks",
+  //   "non-composited-animations",
+  //   "unsized-images",
+  //   "viewport"
+  // ];
   const diagnosticAudits = [
-    "mainthread-work-breakdown",
-    "bootup-time",
-    "uses-rel-preconnect",
-    "font-display",
-    "third-party-summary",
-    "third-party-facades",
-    "largest-contentful-paint-element",
-    "lcp-lazy-loaded",
-    "layout-shift-elements",
-    "uses-passive-event-listeners",
-    "no-document-write",
-    "long-tasks",
-    "non-composited-animations",
-    "unsized-images",
-    "viewport",
+    "bootup-time", // JavaScript execution time
+    "mainthread-work-breakdown", // Main-thread work
+    "long-tasks", // Long tasks
+    "non-composited-animations", // Non-composited animations
+    "unsized-images", // Image dimensions
+    "third-party-summary", // Third-party code
+    "layout-shift-elements", // Layout shift elements
+    "uses-passive-event-listeners", // Passive event listeners
+    "dom-size", // DOM size
+    "critical-request-chains", // Critical requests
+    "user-timings", // User timings
+    "font-display", // Font display
+    "uses-rel-preconnect", // Preconnect
+    "network-rtt", // Network RTT
+    "network-server-latency", // Server latency
   ];
 
-  // let allDiagnostics = []
-
-  // diagnosticAudits.forEach(auditKey => {
-  //   const audit = audits[auditKey];
-  //   if (audit && audit.displayValue) {
-  //     allDiagnostics.push({ title: audit.title, displayValue: audit.displayValue })
-  //   }
-  // });
-
-  // // return every diagnostic in a single line.
-  // let parsedDiagnostics = ""
-  // let parseDiagnostics = allDiagnostics.map((diag) => {
-  //   const lastElement = allDiagnostics.length - 1 === allDiagnostics.indexOf(diag)
-  //   if (lastElement) {
-  //     parsedDiagnostics += `${diag.title} ${diag.displayValue}`
-  //   } else {
-  //     parsedDiagnostics += `${diag.title} ${diag.displayValue}` + "\n"
-  //   }
-  // })
-
   return returnFormatedData(audits, diagnosticAudits);
-
-  return parsedDiagnostics;
 }
 
 // ==============================
 // EXTRACT TOP GENERAL INFO
 // ==============================
 function extractTopGeneral(audits) {
+  // const generalAudits = [
+  //   "uses-http2",
+  //   "uses-long-cache-ttl",
+  //   "total-byte-weight",
+  //   "dom-size",
+  //   "critical-request-chains",
+  //   "user-timings",
+  //   "diagnostics",
+  //   "network-requests",
+  //   "network-rtt",
+  //   "network-server-latency",
+  //   "main-thread-tasks",
+  //   "metrics",
+  //   "screenshot-thumbnails",
+  //   "final-screenshot"
+  // ];
   const generalAudits = [
-    "uses-http2",
-    "uses-long-cache-ttl",
-    "total-byte-weight",
-    "dom-size",
-    "critical-request-chains",
-    "user-timings",
-    "diagnostics",
-    "network-requests",
-    "network-rtt",
-    "network-server-latency",
-    "main-thread-tasks",
-    "metrics",
-    "screenshot-thumbnails",
-    "final-screenshot",
+    "third-party-cookies", // Third-party cookies
+    "errors-in-console", // Console errors
+    "inspector-issues", // Inspector issues
+    "js-libraries", // JavaScript libraries
+    "uses-http2", // HTTP/2
+    "uses-long-cache-ttl", // Cache TTL
+    "total-byte-weight", // Network payload
+    "dom-size", // DOM size
+    "crawlable-anchors", // Crawlable links
+    "canonical", // Canonical
+    "robots-txt", // robots.txt
+    "is-crawlable", // Crawlability
   ];
 
-  // let allGenerals = []
-
-  // generalAudits.forEach((gen) => {
-  //   const audit = audits[gen];
-  //   if (!audit) return;
-  //   const { title, displayValue } = audit
-  //   if (displayValue) {
-  //     allGenerals.push({ title, displayValue })
-  //   }
-  // })
-
-  // console.log("the new function to return general: ", returnFormatedData(audits, generalAudits))
-  // console.log("general audits: ", allGenerals)
-
-  // // Check for common issues
-  // if (audits["uses-http2"] && audits["uses-http2"].score < 1) {
-  //   return audits["uses-http2"].title;
-  // }
-
-  // if (audits["uses-long-cache-ttl"] && audits["uses-long-cache-ttl"].score < 1) {
-  //   return `${audits["uses-long-cache-ttl"].title} ${audits["uses-long-cache-ttl"].displayValue || ""}`;
-  // }
-
-  // if (audits["total-byte-weight"] && audits["total-byte-weight"].score < 1) {
-  //   return `${audits["total-byte-weight"].title} ${audits["total-byte-weight"].displayValue || ""}`;
-  // }
-
-  // if (audits["dom-size"] && audits["dom-size"].score < 1) {
-  //   return `${audits["dom-size"].title} ${audits["dom-size"].displayValue || ""}`;
-  // }
-
-  // return "Optimized";
   return returnFormatedData(audits, generalAudits);
 }
 // ==================================================================================
@@ -263,6 +246,12 @@ function getPageSpeedData(url, strategy) {
     }
 
     const data = JSON.parse(response.getContentText());
+    // active only on testing
+    // const text = response.getContentText();
+    // const currentDate = new Date()
+    // const getTime = currentDate.toISOString()
+    // DriveApp.createFile(strategy+"-"+getTime+"-pagespeed.json", text, "application/json");
+
     const audits = data.lighthouseResult.audits;
     const loadingExperience = data.loadingExperience;
 
@@ -343,12 +332,15 @@ function getMetricValue(metric) {
 // ==============================
 // GOOGLE SHEET SETUP
 // ==============================
-function getOrCreateSheet() {
+function getOrCreateSheet(sheetName) {
+  console.log("getOrCreateSheet urls: ", {
+    sheetName,
+  });
   const spreadsheet = SpreadsheetApp.openById(CONFIG.spreadsheetId);
-  let sheet = spreadsheet.getSheetByName(CONFIG.sheetName);
+  let sheet = spreadsheet.getSheetByName(sheetName);
 
   if (!sheet) {
-    sheet = spreadsheet.insertSheet(CONFIG.sheetName);
+    sheet = spreadsheet.insertSheet(sheetName);
 
     // const headers = [
     //   "Timestamp", "URL", "Device", "Performance Score",
@@ -424,6 +416,15 @@ function addDataToSheet(sheet, url, device, data) {
     data.diagnostics || "in progress", // NEW
     data.general || "in progress", // NEW
   ]);
+
+  const lastRow = sheet.getLastRow();
+  const backgroundColor = device === "mobile" ? "#E8F4FD" : "#FFF4E6";
+  sheet.getRange(lastRow, 1, 1, 10).setBackground(backgroundColor);
+
+  sheet
+    .getRange(lastRow, 8, 1, 3)
+    .setWrap(false)
+    .setVerticalAlignment("bottom");
 
   console.log(`✅ Data saved: ${url} (${device})`);
 }
