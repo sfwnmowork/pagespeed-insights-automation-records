@@ -53,7 +53,8 @@ function extractPageSpeedData() {
     const sheet = getOrCreateSheet();
 
     CONFIG.urls.forEach((url) => {
-      const websiteDomain = url.split("/").pop();
+      // const websiteDomain = url.split("/").pop()
+      const websiteDomain = getHostnameRegex(url);
       // const websiteDomain = new URL(url).hostname
       console.log("url information", {
         url,
@@ -486,4 +487,15 @@ function returnFormatedData(audits, auditsKeys) {
   });
 
   return parsedAudits;
+}
+
+function getHostnameRegex(url) {
+  // This pattern captures the hostname part (including www. and TLDs)
+  const regex =
+    /(?:https?:\/\/|www\.)?([a-zA-Z0-9-.]+\.[a-zA-Z]{2,})(?:\/|\?|$)/i;
+  const match = url.match(regex);
+  if (match && match[1]) {
+    return match[1]; // Returns "www.google.com" or "trello.com"
+  }
+  return null; // Or handle as needed
 }
