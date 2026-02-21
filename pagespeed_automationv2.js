@@ -32,7 +32,7 @@ const CONFIG = {
 
   // Email Notifications
   emailNotification: true,
-  notificationEmail: ["ib-basheer@tab.sa", "sfwn.mo.work@gmail.com"],
+  notificationEmail: ["sfwn.mo.work@gmail.com"],
 
   // ✅ Schedule Times (Runs Daily)
   scheduleTimes: [
@@ -59,8 +59,15 @@ function extractPageSpeedData() {
         url,
         websiteDomain,
       });
+      if (!websiteDomain) {
+        console.log("extractPageSpeedData empty websiteDomain: ", {
+          url,
+          websiteDomain,
+        });
+        return;
+      }
       const sheetName = getOrCreateSheet(websiteDomain);
-      console.log(`🌐 Processing URL: ${url}`);
+      console.log(`🌐 Processing URL: ${url}, and domain: ${websiteDomain}`);
 
       // Mobile + Desktop Tests
       const mobileData = getPageSpeedData(url, "mobile");
@@ -99,38 +106,22 @@ const runTest = () => {
 // EXTRACT TOP INSIGHT (Opportunities)
 // ==============================
 function extractTopInsight(audits) {
-  // const opportunityAudits = [
-  //   "render-blocking-resources",
-  //   "unused-css-rules",
-  //   "unused-javascript",
-  //   "modern-image-formats",
-  //   "offscreen-images",
-  //   "unminified-css",
-  //   "unminified-javascript",
-  //   "efficient-animated-content",
-  //   "duplicated-javascript",
-  //   "legacy-javascript",
-  //   "uses-optimized-images",
-  //   "uses-text-compression",
-  //   "uses-responsive-images"
-  // ];
-
   const opportunityAudits = [
-    "uses-long-cache-ttl", // Cache policy
-    "legacy-javascript", // Legacy JS
-    "render-blocking-resources", // Render blocking
-    "unused-css-rules", // Unused CSS
-    "unused-javascript", // Unused JS
-    "modern-image-formats", // Image formats
-    "offscreen-images", // Offscreen images
-    "unminified-css", // Minified CSS
-    "unminified-javascript", // Minified JS
-    "efficient-animated-content", // Animated content
-    "duplicated-javascript", // Duplicated JS
-    "uses-optimized-images", // Optimized images
-    "uses-text-compression", // Text compression
-    "uses-responsive-images", // Responsive images
-    "uses-rel-preconnect", // Preconnect
+    "uses-long-cache-ttl",
+    "legacy-javascript",
+    "render-blocking-resources",
+    "unused-css-rules",
+    "unused-javascript",
+    "modern-image-formats",
+    "offscreen-images",
+    "unminified-css",
+    "unminified-javascript",
+    "efficient-animated-content",
+    "duplicated-javascript",
+    "uses-optimized-images",
+    "uses-text-compression",
+    "uses-responsive-images",
+    "uses-rel-preconnect",
   ];
 
   return returnFormatedData(audits, opportunityAudits);
@@ -140,39 +131,22 @@ function extractTopInsight(audits) {
 // EXTRACT TOP DIAGNOSTIC
 // ==============================
 function extractTopDiagnostic(audits) {
-  // const diagnosticAudits = [
-  //   "mainthread-work-breakdown",
-  //   "bootup-time",
-  //   "uses-rel-preconnect",
-  //   "font-display",
-  //   "third-party-summary",
-  //   "third-party-facades",
-  //   "largest-contentful-paint-element",
-  //   "lcp-lazy-loaded",
-  //   "layout-shift-elements",
-  //   "uses-passive-event-listeners",
-  //   "no-document-write",
-  //   "long-tasks",
-  //   "non-composited-animations",
-  //   "unsized-images",
-  //   "viewport"
-  // ];
   const diagnosticAudits = [
-    "bootup-time", // JavaScript execution time
-    "mainthread-work-breakdown", // Main-thread work
-    "long-tasks", // Long tasks
-    "non-composited-animations", // Non-composited animations
-    "unsized-images", // Image dimensions
-    "third-party-summary", // Third-party code
-    "layout-shift-elements", // Layout shift elements
-    "uses-passive-event-listeners", // Passive event listeners
-    "dom-size", // DOM size
-    "critical-request-chains", // Critical requests
-    "user-timings", // User timings
-    "font-display", // Font display
-    "uses-rel-preconnect", // Preconnect
-    "network-rtt", // Network RTT
-    "network-server-latency", // Server latency
+    "bootup-time",
+    "mainthread-work-breakdown",
+    "long-tasks",
+    "non-composited-animations",
+    "unsized-images",
+    "third-party-summary",
+    "layout-shift-elements",
+    "uses-passive-event-listeners",
+    "dom-size",
+    "critical-request-chains",
+    "user-timings",
+    "font-display",
+    "uses-rel-preconnect",
+    "network-rtt",
+    "network-server-latency",
   ];
 
   return returnFormatedData(audits, diagnosticAudits);
@@ -182,35 +156,19 @@ function extractTopDiagnostic(audits) {
 // EXTRACT TOP GENERAL INFO
 // ==============================
 function extractTopGeneral(audits) {
-  // const generalAudits = [
-  //   "uses-http2",
-  //   "uses-long-cache-ttl",
-  //   "total-byte-weight",
-  //   "dom-size",
-  //   "critical-request-chains",
-  //   "user-timings",
-  //   "diagnostics",
-  //   "network-requests",
-  //   "network-rtt",
-  //   "network-server-latency",
-  //   "main-thread-tasks",
-  //   "metrics",
-  //   "screenshot-thumbnails",
-  //   "final-screenshot"
-  // ];
   const generalAudits = [
-    "third-party-cookies", // Third-party cookies
-    "errors-in-console", // Console errors
-    "inspector-issues", // Inspector issues
-    "js-libraries", // JavaScript libraries
-    "uses-http2", // HTTP/2
-    "uses-long-cache-ttl", // Cache TTL
-    "total-byte-weight", // Network payload
-    "dom-size", // DOM size
-    "crawlable-anchors", // Crawlable links
-    "canonical", // Canonical
-    "robots-txt", // robots.txt
-    "is-crawlable", // Crawlability
+    "third-party-cookies",
+    "errors-in-console",
+    "inspector-issues",
+    "js-libraries",
+    "uses-http2",
+    "uses-long-cache-ttl",
+    "total-byte-weight",
+    "dom-size",
+    "crawlable-anchors",
+    "canonical",
+    "robots-txt",
+    "is-crawlable",
   ];
 
   return returnFormatedData(audits, generalAudits);
@@ -333,6 +291,10 @@ function getMetricValue(metric) {
 // GOOGLE SHEET SETUP
 // ==============================
 function getOrCreateSheet(sheetName) {
+  if (!sheetName) {
+    console.log("sheetName is empty");
+    return;
+  }
   console.log("getOrCreateSheet urls: ", {
     sheetName,
   });
